@@ -100,7 +100,6 @@ public class RedirectFilter implements Filter {
 
     private void redirect(HttpServletRequest httpServletRequest,
                           HttpServletResponse httpServletResponse) throws Exception {
-        Thread.sleep(10*60*60*1000);
         String method = httpServletRequest.getMethod();
         HttpRequestBase requestBase = null;
 
