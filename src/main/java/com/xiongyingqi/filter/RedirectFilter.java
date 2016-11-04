@@ -83,11 +83,11 @@ public class RedirectFilter implements Filter {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
-        //        invokeAllGetMethods(HttpServletRequest.class, httpServletRequest);
+        invokeAllGetMethods(HttpServletRequest.class, httpServletRequest);
         //        invokeAllGetMethods(HttpServletResponse.class, httpServletResponse);
         String queryString = httpServletRequest.getQueryString();
-        if(logger.isDebugEnabled()) {
-            logger.debug("QueryString={}", queryString);
+        if (logger.isDebugEnabled()) {
+            logger.debug("RequestURL={}, QueryString={}", httpServletRequest.getRequestURL(), queryString);
         }
         try {
             redirect(httpServletRequest, httpServletResponse);
@@ -117,7 +117,8 @@ public class RedirectFilter implements Filter {
         } else if ("put".equalsIgnoreCase(method)) {
             requestBase = new HttpPut(url);
             ServletInputStream inputStream = httpServletRequest.getInputStream();
-            InputStreamEntity entity = new InputStreamEntity(inputStream, httpServletRequest.getContentLengthLong());
+            InputStreamEntity entity = new InputStreamEntity(inputStream, httpServletRequest
+                    .getContentLengthLong());
             ((HttpPut) requestBase).setEntity(entity);
         } else if ("delete".equalsIgnoreCase(method)) {
             requestBase = new HttpDelete(url);
@@ -152,6 +153,22 @@ public class RedirectFilter implements Filter {
             outputStream.flush();
             outputStream.close();
         }
+    }
+
+    private static String getProtocolString(String requestUrl) {
+        if (requestUrl == null) {
+            return null;
+        }
+        String protocol = requestUrl.substring(0, requestUrl.indexOf(":"));
+        return protocol;
+    }
+
+    private static String getProtocolPrefixString(String requestUrl){
+        if (requestUrl == null) {
+            return null;
+        }
+        String protocol = requestUrl.substring(0, requestUrl.indexOf(":") + 3);
+        return protocol;
     }
 
     private void setHeaders(HttpServletRequest httpServletRequest, HttpRequestBase requestBase) {
@@ -204,7 +221,7 @@ public class RedirectFilter implements Filter {
         for (Method declaredMethod : declaredMethods) {
             String name = declaredMethod.getName();
             if (!(name.startsWith("get") && Modifier
-                    .isPublic(declaredMethod.getModifiers()))) {
+                    .isPublic(declaredMethod.getModifiers())) || name.contains("Stream")) {
                 continue;
             }
             try {
@@ -220,6 +237,4 @@ public class RedirectFilter implements Filter {
         invokeAllGetMethods(o.getClass(), o);
     }
 
-    //    public static void main(String[] args) {
-    //    }
 }
